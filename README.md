@@ -8,7 +8,7 @@ Proyecto ECO300 · Grupo 99 · Estado actual: **stack completo implementado y ve
 | Backend Laravel 12 + Sanctum + API REST | ✅ |
 | Frontend React + Vite + Recharts | ✅ |
 | Docker full stack (4 contenedores) | ✅ |
-| Repositorio GitHub | ⏳ |
+| Repositorio GitHub | ✅ — https://github.com/awdaz/simulador-microeconomico-eco300 |
 
 ## Stack
 
