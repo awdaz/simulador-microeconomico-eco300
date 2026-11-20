@@ -1,0 +1,34 @@
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+!.env.example.*
+*.pem
+*.key
+
+# Dependencias y builds
+**/node_modules/
+**/vendor/
+**/dist/
+**/build/
+**/.vite/
+
+# Laravel: caches, logs y almacenamiento volátil
+**/bootstrap/cache/*.php
+**/storage/framework/cache/
+**/storage/framework/sessions/
+**/storage/framework/views/
+**/storage/framework/testing/
+**/storage/logs/
+**/storage/app/public/
+**/storage/app/private/
+*.log
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.fleet/
+*.swp
+**/.config/psysh/
