@@ -1,0 +1,638 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Manual — Simulador Microeconómico ECO300</title><style>
+    @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", "Calibri", Arial, sans-serif;
+      color: #1f2933; font-size: 10.5pt; line-height: 1.45; margin: 0;
+    }
+    h1 { font-size: 22pt; color: #0b4f6c; margin: 0 0 6pt; }
+    h2 { font-size: 16pt; color: #0b4f6c; margin: 20pt 0 8pt;
+         border-bottom: 2px solid #d6e6ee; padding-bottom: 4pt;
+         page-break-after: avoid; }
+    h3 { font-size: 12.5pt; color: #14506b; margin: 14pt 0 6pt;
+         page-break-after: avoid; }
+    h4 { font-size: 11pt; color: #14506b; margin: 10pt 0 4pt;
+         page-break-after: avoid; }
+    p { margin: 5pt 0; orphans: 2; widows: 2; }
+    ul, ol { margin: 5pt 0 5pt 18pt; padding-left: 8pt; }
+    li { margin: 2pt 0; }
+    table { border-collapse: collapse; width: 100%; margin: 8pt 0;
+            font-size: 9.2pt; page-break-inside: avoid; }
+    th { background: #0b4f6c; color: white; text-align: left;
+         padding: 5pt 6pt; border: 1px solid #0b4f6c; }
+    td { padding: 4pt 6pt; border: 1px solid #c8d6de; vertical-align: top; }
+    tr:nth-child(even) td { background: #f2f7fa; }
+    pre { background: #f3f5f7; border: 1px solid #d7dee3; border-left: 3px solid #0b4f6c;
+          padding: 8pt 10pt; font-size: 8.6pt; line-height: 1.3;
+          white-space: pre-wrap; word-break: break-word; margin: 8pt 0;
+          page-break-inside: avoid; }
+    code { font-family: Consolas, "Courier New", monospace; font-size: 0.92em; }
+    p code, li code, td code { background: #edf2f5; padding: 0 2pt; border-radius: 2pt; }
+    blockquote { border-left: 3px solid #d99a2b; background: #fff8e8;
+                 margin: 8pt 0; padding: 6pt 10pt; color: #5c4a25; }
+    hr { border: none; border-top: 1px solid #d6e6ee; margin: 14pt 0; }
+    a { color: #0b6a9c; text-decoration: none; }
+    .cover { page-break-after: always; padding-top: 45mm; text-align: center; }
+    .cover h1 { font-size: 30pt; }
+    .cover .subtitle { font-size: 15pt; color: #3d6b80; margin-top: 8pt; }
+    .cover .meta { font-size: 10pt; color: #64748b; margin-top: 45mm; }
+    </style></head><body><div class="cover"><h1>Manual del Simulador Microeconómico ECO300</h1><div class="subtitle">Manual del Simulador Microeconómico</div><div class="meta">Proyecto ECO300 · Grupo 99<br>Documentación de usuario y desarrollador<br>Generado desde docs/manual.md</div></div>
+<p><strong>Proyecto ECO300 · Grupo 99</strong></p>
+<p>Manual de usuario y documentación técnica. Cubre desde el ingreso a la aplicación hasta el modelo económico, la API REST, la base de datos y el despliegue con Docker.</p>
+<blockquote>La fuente de verdad de este documento es <code>docs/manual.md</code>. Las versiones PDF, DOCX y HTML se generan con <code>python scripts/build_manual.py</code>.</blockquote>
+<hr>
+<h2>Índice</h2>
+<p><strong>Parte I — Usuario</strong></p>
+<ul>
+<li><a href="#1-qué-hace-el-simulador">Qué hace el simulador</a></li>
+<li><a href="#2-acceso-a-la-aplicación">Acceso a la aplicación</a></li>
+<li><a href="#3-pantallas-y-navegación">Pantallas y navegación</a></li>
+<li><a href="#4-flujo-de-trabajo-paso-a-paso">Flujo de trabajo paso a paso</a></li>
+<li><a href="#5-cómo-interpretar-los-resultados">Cómo interpretar los resultados</a></li>
+<li><a href="#6-mensajes-de-error-frecuentes">Mensajes de error frecuentes</a></li>
+<li><a href="#7-límites-y-comportamientos-a-tener-en-cuenta">Límites y comportamientos a tener en cuenta</a></li>
+</ul>
+<p><strong>Parte II — Desarrolladores</strong></p>
+<ul>
+<li><a href="#8-arquitectura-y-stack">Arquitectura y stack</a></li>
+<li><a href="#9-arranque-rápido">Arranque rápido</a></li>
+<li><a href="#10-servicios-puertos-y-credenciales">Servicios, puertos y credenciales</a></li>
+<li><a href="#11-estructura-del-repositorio">Estructura del repositorio</a></li>
+<li><a href="#12-base-de-datos">Base de datos</a></li>
+<li><a href="#13-api-rest">API REST</a></li>
+<li><a href="#14-cómo-se-ejecuta-una-simulación">Cómo se ejecuta una simulación</a></li>
+<li><a href="#15-autenticación-roles-y-cors">Autenticación, roles y CORS</a></li>
+<li><a href="#16-verificación-y-pruebas">Verificación y pruebas</a></li>
+<li><a href="#17-configuración">Configuración</a></li>
+<li><a href="#18-comandos-útiles">Comandos útiles</a></li>
+<li><a href="#19-solución-de-problemas">Solución de problemas</a></li>
+<li><a href="#20-discrepancias-conocidas-entre-readme-y-código">Discrepancias conocidas entre README y código</a></li>
+</ul>
+<hr>
+<h1>Parte I — Manual de usuario</h1>
+<h2>1. Qué hace el simulador</h2>
+<p>La aplicación estima una <strong>función de demanda lineal</strong> a partir de precios observados y calcula el precio que maximiza el beneficio.</p>
+<table>
+<thead><tr><th>Concepto</th><th>Fórmula</th><th>Significado</th></tr></thead>
+<tbody>
+<tr><td>Demanda</td><td><code>Q = a − b·P</code></td><td>A mayor precio, menor cantidad demandada (<code>b &amp;gt; 0</code>).</td></tr>
+<tr><td>Ingreso</td><td><code>IT = P · Q</code></td><td>Precio por cantidad vendida.</td></tr>
+<tr><td>Costo total</td><td><code>CT = CF + CV·Q</code></td><td>Costo fijo más costo variable unitario por unidad.</td></tr>
+<tr><td>Beneficio</td><td><code>Π = IT − CT</code></td><td>Utilidad.</td></tr>
+<tr><td>Precio óptimo</td><td><code>P* = (a + b·CV) / (2b)</code></td><td>Precio que maximiza <code>Π</code>.</td></tr>
+<tr><td>Cantidad óptima</td><td><code>Q* = a − b·P*</code></td><td>Demanda al precio óptimo.</td></tr>
+<tr><td>Elasticidad (EPD)</td><td><code>EPD = b·P / Q</code></td><td>Sensibilidad de la demanda al precio.</td></tr>
+<tr><td>Equilibrio</td><td><code>Π = 0</code></td><td>Precios donde no hay pérdida (si existen).</td></tr>
+</tbody></table>
+<p>Clasificación de la demanda según EPD:</p>
+<table>
+<thead><tr><th>EPD</th><th>Tipo</th><th>Etiqueta en pantalla</th></tr></thead>
+<tbody>
+<tr><td><code>&amp;gt; 1</code></td><td><code>elastic</code></td><td>Elástica / Demanda elástica</td></tr>
+<tr><td><code>≈ 1</code></td><td><code>unitary</code></td><td>Unitaria / Demanda unitaria</td></tr>
+<tr><td><code>&amp;lt; 1</code></td><td><code>inelastic</code></td><td>Inelástica / Demanda inelástica</td></tr>
+</tbody></table>
+<p>La ecuación se estima por <strong>mínimos cuadrados</strong> usando todas las observaciones cargadas del producto. Se necesitan <strong>al menos 2 observaciones con precios distintos</strong>.</p>
+<h2>2. Acceso a la aplicación</h2>
+<table>
+<thead><tr><th>Servicio</th><th>URL</th></tr></thead>
+<tbody>
+<tr><td>Aplicación (frontend)</td><td>http://localhost:5173</td></tr>
+<tr><td>API (backend)</td><td>http://localhost:8000/api</td></tr>
+<tr><td>pgAdmin</td><td>http://localhost:5050</td></tr>
+</tbody></table>
+<h3>Ingresar</h3>
+<ul>
+<li>Abrir http://localhost:5173. Si no hay sesión, se redirige a <code>/login</code>.</li>
+<li>El formulario viene prellenado con la cuenta demo de administrador.</li>
+</ul>
+<table>
+<thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+<tbody>
+<tr><td>Correo electrónico</td><td><code>admin@economia.test</code></td></tr>
+<tr><td>Contraseña</td><td><code>password123</code></td></tr>
+</tbody></table>
+<ul>
+<li>Pulsar <strong>Ingresar</strong>. Se guarda un token en el navegador y se abre <code>/dashboard</code>.</li>
+</ul>
+<p>También está la cuenta de usuario <code>user@economia.test</code> / <code>password123</code>.</p>
+<h3>Crear una cuenta</h3>
+<p>En <code>/login</code>, pulsar <strong>Regístrate</strong> e completar:</p>
+<table>
+<thead><tr><th>Campo</th><th>Requisito</th></tr></thead>
+<tbody>
+<tr><td>Nombre</td><td>Obligatorio, hasta 120 caracteres</td></tr>
+<tr><td>Correo electrónico</td><td>Obligatorio, válido y no registrado</td></tr>
+<tr><td>Contraseña</td><td>Mínimo 8 caracteres</td></tr>
+<tr><td>Confirmar contraseña</td><td>Debe coincidir con la contraseña</td></tr>
+</tbody></table>
+<p>Pulsar <strong>Registrarse</strong>. La cuenta se crea con rol <code>user</code> (la pantalla dice «rol estudiante», pero el rol real en el sistema es <code>user</code>).</p>
+<blockquote>Si las contraseñas no coinciden, la propia pantalla muestra «Las contraseñas no coinciden.» y no envía la petición.</blockquote>
+<h3>Cerrar sesión</h3>
+<p>Pulsar <strong>Cerrar sesión</strong> en la parte inferior del menú lateral. Se revoca el token, se limpian los datos guardados y vuelve a <code>/login</code>.</p>
+<h2>3. Pantallas y navegación</h2>
+<p>El menú lateral («ECO — Simulador Microeconómico · ECO300») contiene:</p>
+<table>
+<thead><tr><th>Opción</th><th>Ruta</th><th>Qué muestra</th><th>Acceso</th></tr></thead>
+<tbody>
+<tr><td>▦ Resumen</td><td><code>/dashboard</code></td><td>KPIs, última simulación y gráfico de beneficios</td><td>Todos</td></tr>
+<tr><td>◈ Simulaciones</td><td><code>/simulations</code></td><td>Listado y creación de escenarios</td><td>Todos</td></tr>
+<tr><td>▤ Productos</td><td><code>/products</code></td><td>Productos, estimación y observaciones de precio</td><td>Todos</td></tr>
+<tr><td>⚙ Administración</td><td><code>/admin</code></td><td>Auditoría y simulaciones de todos los usuarios</td><td>Solo <code>admin</code></td></tr>
+</tbody></table>
+<p>Cualquier ruta desconocida redirige a <code>/dashboard</code> y, si no hay sesión, a <code>/login</code>. Mientras se valida la sesión se muestra «Cargando sesión…».</p>
+<p>La moneda se muestra con formato <code>es-BO</code> / <code>BOB</code> y dos decimales en KPIs y tablas.</p>
+<h2>4. Flujo de trabajo paso a paso</h2>
+<h3>4.1 Revisar productos y observaciones</h3>
+<p>Ir a <strong>Productos</strong> (<code>/products</code>).</p>
+<p>Con la cuenta demo se selecciona automáticamente el producto del caso de estudio:</p>
+<table>
+<thead><tr><th>Dato</th><th>Valor</th></tr></thead>
+<tbody>
+<tr><td>Producto</td><td>Producto de alta rotacion</td></tr>
+<tr><td>SKU</td><td><code>PAR-001</code></td></tr>
+<tr><td>Unidad</td><td>unidad</td></tr>
+<tr><td>Costo variable unitario (CV)</td><td><code>4.00</code></td></tr>
+<tr><td>Stock</td><td>100</td></tr>
+<tr><td>Estado</td><td>Activo</td></tr>
+<tr><td>Empresa</td><td>Tienda Minorista Santa Cruz (CF = 1500)</td></tr>
+</tbody></table>
+<p>En el panel aparece la <strong>función de demanda estimada</strong>, por ejemplo <code>Q = 1000.0000 - 50.0000P</code>, junto a <code>Intercepto a</code>, <code>Pendiente b</code> y la cantidad de observaciones.</p>
+<blockquote>La aplicación <strong>no permite crear ni editar productos desde la interfaz</strong>. Los productos se cargan con los scripts SQL iniciales. Si la cuenta no tiene productos, se muestra «Sin productos» y «Tu cuenta no tiene productos asociados. Usa el usuario demo para explorar el caso de estudio.»</blockquote>
+<h3>4.2 Agregar o quitar observaciones de precio</h3>
+<p>En el panel <strong>Agregar observación</strong>:</p>
+<table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Regla</th></tr></thead>
+<tbody>
+<tr><td>Precio</td><td>Número</td><td><code>≥ 0.01</code>, paso <code>0.01</code></td></tr>
+<tr><td>Cantidad</td><td>Número entero</td><td><code>≥ 0</code></td></tr>
+<tr><td>Fecha</td><td>Fecha</td><td>Obligatoria; por defecto, hoy</td></tr>
+<tr><td>Origen</td><td>Lista</td><td><code>Histórico</code> u <code>Estimado</code> (por defecto, Histórico)</td></tr>
+</tbody></table>
+<p>Pulsar <strong>Agregar</strong>. La tabla <strong>Observaciones registradas</strong> se actualiza y la ecuación de demanda se reestima automáticamente con todas las observaciones. No aparece un mensaje de éxito: el cambio se ve reflejado en la ecuación.</p>
+<p>Para borrar una fila, pulsar <strong>Eliminar</strong> en ella. Esta acción <strong>no pide confirmación</strong>.</p>
+<p>Las observaciones del caso base son:</p>
+<table>
+<thead><tr><th>Precio</th><th>Cantidad</th><th>Fecha</th></tr></thead>
+<tbody>
+<tr><td>10.00</td><td>500</td><td>2026-10-01</td></tr>
+<tr><td>14.00</td><td>300</td><td>2026-10-15</td></tr>
+</tbody></table>
+<h3>4.3 Ejecutar una simulación</h3>
+<p>Ir a <strong>Simulaciones</strong> (<code>/simulations</code>) y pulsar <strong>+ Nueva simulación</strong>. Completar el panel <strong>Parámetros de la simulación</strong>:</p>
+<table>
+<thead><tr><th>Campo</th><th>Valor por defecto</th><th>Observación</th></tr></thead>
+<tbody>
+<tr><td>Producto</td><td>Primero de la lista</td><td>Opciones <code>nombre (SKU)</code></td></tr>
+<tr><td>Nombre</td><td>Vacío</td><td>Si se deja vacío se genera <code>Simulación &amp;lt;fecha&amp;gt;</code></td></tr>
+<tr><td>Precio mínimo</td><td><code>4</code></td><td><code>≥ 0.01</code></td></tr>
+<tr><td>Precio máximo</td><td><code>25</code></td><td>Debe ser mayor al mínimo</td></tr>
+<tr><td>Paso</td><td><code>0.5</code></td><td><code>≥ 0.01</code></td></tr>
+<tr><td>CV unitario (opcional)</td><td>Vacío</td><td>Si se deja vacío usa el del producto</td></tr>
+<tr><td>Costo fijo (opcional)</td><td>Vacío</td><td>Si se deja vacío usa el de la empresa</td></tr>
+</tbody></table>
+<p>Pulsar <strong>Ejecutar simulación</strong>. La aplicación abre automáticamente el detalle de la simulación creada.</p>
+<blockquote>La grilla incluye ambos extremos: se genera desde <code>Precio mínimo</code> sumando <code>Paso</code> mientras el precio sea <code>≤ Precio máximo</code>. Con los valores por defecto salen <strong>43 filas</strong> (de 4.00 a 25.00, paso 0.50).</blockquote>
+<blockquote>Si se repite el mismo <strong>Nombre</strong> para el <strong>mismo producto</strong>, la simulación existente se <strong>sobrescribe</strong> en lugar de crear una nueva. Usar nombres distintos para conservar escenarios.</blockquote>
+<h3>4.4 Ver el detalle de una simulación</h3>
+<p>En <code>/simulations/:id</code> se muestran cuatro indicadores:</p>
+<table>
+<thead><tr><th>Indicador</th><th>Contenido</th></tr></thead>
+<tbody>
+<tr><td>Precio óptimo (P*)</td><td>Precio que maximiza el beneficio; debajo, <code>Q* = …</code></td></tr>
+<tr><td>Beneficio máximo (Π*)</td><td>Utilidad en el óptimo</td></tr>
+<tr><td>Elasticidad (EPD)</td><td>Valor con 4 decimales y tipo de demanda</td></tr>
+<tr><td>Umbrales de equilibrio</td><td>Rango <code>mín – máx</code> de precios sin pérdida, o <code>—</code></td></tr>
+</tbody></table>
+<p>La franja informativa muestra la demanda estimada, el costo variable unitario, el costo fijo, el rango de precios y el «Óptimo en grilla» (precio de la fila marcada como óptima).</p>
+<h4>Pestaña Gráficos</h4>
+<ul>
+<li><strong>Beneficio por precio</strong>: área verde de <code>Beneficio</code>, línea azul de <code>Ingreso</code>, línea ámbar de <code>Costo total</code> y una línea roja discontinua en <code>P*</code>.</li>
+<li><strong>Curva de demanda</strong>: eje X = Cantidad (Q), eje Y = Precio (P), con líneas rojas en <code>P*</code> y <code>Q*</code>. Si hay observaciones, se agrega un gráfico de puntos «Observaciones registradas» con eje X = Precio y eje Y = Cantidad.</li>
+</ul>
+<h4>Pestaña Grilla de precios (N)</h4>
+<p>Columnas: <strong>Precio | Cantidad | Ingreso | Costo total | Beneficio | EPD | estado</strong>.</p>
+<table>
+<thead><tr><th>Marcador</th><th>Significado</th></tr></thead>
+<tbody>
+<tr><td><strong>Óptimo</strong></td><td>Fila con el precio más cercano al óptimo analítico (fondo verde)</td></tr>
+<tr><td><strong>Equilibrio</strong></td><td>Precio dentro del rango sin pérdida</td></tr>
+<tr><td>Beneficio en verde / rojo</td><td><code>≥ 0</code> / <code>&amp;lt; 0</code></td></tr>
+</tbody></table>
+<h3>4.5 Recalcular y eliminar</h3>
+<ul>
+<li><strong>↻ Recalcular</strong>: vuelve a calcular la simulación con los <strong>valores guardados</strong> de demanda y costos al momento de ejecutarla. Actualiza KPIs, gráficos y grilla. No muestra mensaje de confirmación.</li>
+<li><strong>Eliminar</strong>: pide confirmación con «¿Eliminar esta simulación?» y borra la simulación. En el listado y en el detalle está disponible; en el listado también hay un enlace <strong>Ver</strong>.</li>
+</ul>
+<h3>4.6 Administración (solo administrador)</h3>
+<p>La opción <strong>⚙ Administración</strong> solo aparece en el menú para usuarios con rol <code>admin</code>. Tiene dos pestañas de solo lectura:</p>
+<table>
+<thead><tr><th>Pestaña</th><th>Contenido</th></tr></thead>
+<tbody>
+<tr><td>Auditoría (N)</td><td>Últimos 100 eventos: ID, Tabla, Operación, Registro, Usuario, Fecha</td></tr>
+<tr><td>Simulaciones (N)</td><td>Últimas 100 simulaciones de todos los usuarios: ID, Nombre, Usuario, Producto, P*, Beneficio, Fecha</td></tr>
+</tbody></table>
+<p>No hay botones para crear, editar ni borrar desde esta pantalla.</p>
+<h3>4.7 Ejemplo verificado del caso base</h3>
+<table>
+<thead><tr><th>Magnitud</th><th>Resultado</th></tr></thead>
+<tbody>
+<tr><td>Demanda</td><td><code>Q = 1000 − 50P</code></td></tr>
+<tr><td>Precio óptimo</td><td><code>12.00 Bs.</code></td></tr>
+<tr><td>Cantidad óptima</td><td><code>400 unidades</code></td></tr>
+<tr><td>Beneficio máximo</td><td><code>1700.00 Bs.</code></td></tr>
+<tr><td>EPD</td><td><code>1.50</code> → elástica</td></tr>
+<tr><td>Puntos de equilibrio</td><td><code>6.17 Bs.</code> y <code>17.83 Bs.</code></td></tr>
+<tr><td>Grilla</td><td>43 filas (4.00 → 25.00, paso 0.50)</td></tr>
+</tbody></table>
+<h2>5. Cómo interpretar los resultados</h2>
+<ul>
+<li><strong>La ecuación</strong> <code>Q = a − bP</code> indica cuántas unidades se demandan a cada precio. <code>a</code> es el intercepto y <code>b</code> la sensibilidad al precio.</li>
+<li><strong>El precio óptimo</strong> (<code>P*</code>) es el que maximiza <code>Π</code>. En la grilla, la fila marcada <strong>Óptimo</strong> es el precio disponible más cercano a ese valor teórico.</li>
+<li><strong>La elasticidad (EPD)</strong> responde «¿cuánto cambia la demanda ante un cambio del precio?». Con <code>EPD = 1.50</code>, un aumento del 1 % en el precio reduce la cantidad demandada cerca de un 1.5 %: la demanda es elástica.</li>
+<li><strong>Los umbrales de equilibrio</strong> delimitan el rango de precios con beneficio no negativo. Fuera de ese rango, la fila aparece con beneficio en rojo.</li>
+<li><strong>Cambiar los costos</strong>: para analizar costos distintos sin alterar el producto, usar los campos opcionales <strong>CV unitario</strong> y <strong>Costo fijo</strong> al crear la simulación. Si los costos del producto cambian después, crear una simulación nueva refleja los valores vigentes; <strong>Recalcular</strong> usa los del snapshot guardado.</li>
+</ul>
+<h2>6. Mensajes de error frecuentes</h2>
+<p>Los errores aparecen en una alerta roja en la pantalla correspondiente.</p>
+<table>
+<thead><tr><th>Mensaje</th><th>Causa probable</th></tr></thead>
+<tbody>
+<tr><td><code>Las credenciales no son correctas.</code></td><td>Correo o contraseña incorrectos</td></tr>
+<tr><td><code>Este correo ya esta registrado.</code></td><td>Registro con un correo existente</td></tr>
+<tr><td><code>La confirmacion de la contrasena no coincide.</code></td><td>Las contraseñas no coinciden</td></tr>
+<tr><td><code>El precio maximo debe ser mayor al precio minimo.</code></td><td>Rango de precios inválido</td></tr>
+<tr><td><code>El producto seleccionado no existe.</code></td><td>Producto inexistente</td></tr>
+<tr><td><code>No tienes acceso a este producto.</code> / <code>No tienes acceso a esta simulacion.</code></td><td>Recurso de otro usuario</td></tr>
+<tr><td><code>Se requiere rol de administrador.</code></td><td>Usuario <code>user</code> accede a <code>/admin</code> por API</td></tr>
+<tr><td><code>Se requieren al menos 2 observaciones para estimar la demanda del producto …</code></td><td>Faltan observaciones</td></tr>
+<tr><td><code>Todos los precios observados son iguales; no se puede estimar la pendiente</code></td><td>Todos los precios son idénticos</td></tr>
+<tr><td><code>Los datos no describen una demanda decreciente (b = …)</code></td><td>Las observaciones no muestran que suba el precio → baje la demanda</td></tr>
+<tr><td><code>El precio debe ser mayor a 0</code> / <code>La cantidad demandada no puede ser negativa</code></td><td>Observación inválida</td></tr>
+<tr><td><code>Rango de precios invalido: min=…, max=…, paso=…</code></td><td>Parámetros de grilla inconsistentes</td></tr>
+<tr><td><code>Error inesperado</code></td><td>Error sin mensaje concreto desde la API</td></tr>
+</tbody></table>
+<p>Una respuesta <code>401</code> cierra la sesión y redirige a <code>/login</code>. Una respuesta <code>403</code> muestra el mensaje pero <strong>no</strong> cierra la sesión.</p>
+<h2>7. Límites y comportamientos a tener en cuenta</h2>
+<ul>
+<li>No hay alta, edición ni baja de productos desde la interfaz; las observaciones sí se pueden agregar y eliminar.</li>
+<li>Borrar una observación <strong>no pide confirmación</strong> y no muestra mensaje de éxito.</li>
+<li>El listado de simulaciones muestra como máximo las <strong>15 más recientes</strong> (la API pagina en 15 y la interfaz no tiene controles de paginación).</li>
+<li>El panel de administración muestra como máximo 100 registros por tabla y no permite acciones.</li>
+<li><strong>Recalcular</strong> no vuelve a estimar la demanda ni relee los costos actuales: usa los valores guardados en la simulación.</li>
+<li>Repetir nombre y producto al crear una simulación sobrescribe la anterior.</li>
+<li>La pestaña de grilla muestra la cantidad real de filas, que depende del rango y el paso elegidos (43 es el valor del caso base, no una constante).</li>
+<li>En el gráfico de demanda, la curva usa Q en X y P en Y, mientras que el gráfico de puntos de observaciones usa P en X y Q en Y.</li>
+<li>El token se guarda en <code>localStorage</code> bajo <code>eco300_token</code> y los datos del usuario bajo <code>eco300_user</code>.</li>
+</ul>
+<hr>
+<h1>Parte II — Documentación técnica</h1>
+<h2>8. Arquitectura y stack</h2>
+<table>
+<thead><tr><th>Capa</th><th>Tecnología</th></tr></thead>
+<tbody>
+<tr><td>Base de datos</td><td>PostgreSQL 16 (<code>postgres:16-alpine</code>)</td></tr>
+<tr><td>Backend</td><td>PHP 8.3 · Laravel 12 · Sanctum (Bearer token)</td></tr>
+<tr><td>Frontend</td><td>React 18 · Vite 6 · React Router 7 · Axios · Recharts</td></tr>
+<tr><td>Contenedores</td><td>Docker Compose: <code>postgres</code>, <code>pgadmin</code>, <code>backend</code>, <code>frontend</code> (nginx)</td></tr>
+</tbody></table>
+<p>La lógica económica vive en la base de datos (funciones, procedimientos almacenados y triggers). Laravel es una delgada capa HTTP que valida, verifica permisos y llama a la BD; React consume la API y presenta los resultados.</p>
+<h2>9. Arranque rápido</h2>
+<h3>Windows (PowerShell)</h3>
+<pre><code class="language-powershell"># 1) Inicializar BD e instalarse datos demo (idempotente)
+powershell -ExecutionPolicy Bypass -File scripts\init_db.ps1
+
+# 2) Levantar API + frontend
+docker compose up -d --build</code></pre>
+<p>Si la BD ya está inicializada, alcanza con <code>docker compose up -d</code>.</p>
+<h3>Linux / macOS</h3>
+<pre><code class="language-bash">bash scripts/init_db.sh
+docker compose up -d --build</code></pre>
+<p><code>init_db.ps1</code> / <code>init_db.sh</code> copian <code>.env</code> si no existe, levantan <code>postgres</code> y <code>pgadmin</code>, esperan hasta ~80 s a que <code>simeco-postgres</code> esté <code>healthy</code>, ejecutan <code>00_run_all.sql</code> y luego <code>99_verify.sql</code>.</p>
+<blockquote>No ejecutar <code>php artisan migrate</code> sobre esta base. El esquema es propiedad de los scripts SQL de <code>database/sql</code>.</blockquote>
+<h2>10. Servicios, puertos y credenciales</h2>
+<table>
+<thead><tr><th>Servicio</th><th>Contenedor</th><th>Puerto host</th><th>Interno</th><th>Credenciales</th></tr></thead>
+<tbody>
+<tr><td>Frontend</td><td><code>simeco-frontend</code></td><td>5173</td><td>80 (nginx)</td><td>—</td></tr>
+<tr><td>Backend</td><td><code>simeco-backend</code></td><td>8000</td><td>8000</td><td>Token Bearer</td></tr>
+<tr><td>pgAdmin</td><td><code>simeco-pgadmin</code></td><td>5050</td><td>80</td><td><code>admin@economia.com</code> / <code>admin</code></td></tr>
+<tr><td>PostgreSQL</td><td><code>simeco-postgres</code></td><td>5433</td><td>5432</td><td>DB/usuario/password <code>economia</code></td></tr>
+</tbody></table>
+<p>Usuarios demo:</p>
+<table>
+<thead><tr><th>Correo</th><th>Contraseña</th><th>Rol</th></tr></thead>
+<tbody>
+<tr><td><code>admin@economia.test</code></td><td><code>password123</code></td><td><code>admin</code></td></tr>
+<tr><td><code>user@economia.test</code></td><td><code>password123</code></td><td><code>user</code></td></tr>
+</tbody></table>
+<p>En pgAdmin: *Add New Server → General: nombre <code>economia</code> → Connection: Host <code>postgres</code>, Port <code>5432</code>, Username <code>economia</code>, Password <code>economia</code>*. El correo de pgAdmin debe tener dominio público (<code>.com</code>), a diferencia del correo de la app (<code>.test</code>).</p>
+<p>Detalles del compose:</p>
+<ul>
+<li><code>postgres</code>: volumen nombrado <code>pgdata</code> en <code>/var/lib/postgresql/data</code>; bind readonly <code>./database/sql:/sql:ro</code>; healthcheck <code>pg_isready</code> cada 5 s, 12 reintentos; <code>PG_TIMEZONE=America/La_Paz</code>.</li>
+<li><code>backend</code>: bind <code>./backend:/var/www</code> + volumen anónimo para <code>/var/www/vendor</code>; depende de <code>postgres</code> con <code>condition: service_healthy</code>; comando <code>php artisan serve --host=0.0.0.0 --port=8000 --no-reload</code>.</li>
+<li><code>frontend</code>: build con <code>ARG VITE_API_URL</code>; depende de <code>backend</code>; sin volúmenes.</li>
+<li><code>pgadmin</code>: depende de <code>postgres</code> con <code>condition: service_healthy</code>.</li>
+</ul>
+<blockquote><code>--no-reload</code> es necesario: sin esa opción, Laravel 12 filtra las variables de entorno hacia el proceso hijo y el backend intenta conectarse a <code>127.0.0.1:5433</code> en vez de <code>postgres:5432</code>.</blockquote>
+<h2>11. Estructura del repositorio</h2>
+<pre><code>docker-compose.yml             PostgreSQL + pgAdmin + backend Laravel + frontend nginx
+.env.example                   Variables del stack
+docs/
+  manual.md                    Fuente de este manual
+  manual.html / manual.pdf / manual.docx   Versiones generadas
+scripts/
+  init_db.ps1 / init_db.sh     Inicialización idempotente de la BD
+  test_api.ps1                 Pruebas de extremo a extremo de la API
+  build_manual.py              Genera HTML/PDF/DOCX desde docs/manual.md
+database/sql/
+  00_run_all.sql               Punto de entrada (incluye 01..06)
+  01_schema.sql                11 tablas + 2 vistas + índices
+  02_functions.sql             8 funciones + 5 funciones de trigger
+  03_procedures.sql            4 procedimientos almacenados
+  04_triggers.sql              11 triggers
+  05_seed.sql                  Usuarios demo
+  06_api_helpers.sql           fn_run_simulation (wrapper del PA para Laravel)
+  98_tests.sql                 Pruebas de funciones y triggers (opcional)
+  99_verify.sql                Verificación con aserciones
+backend/                       Aplicación Laravel 12
+frontend/                      Aplicación React + Vite</code></pre>
+<h2>12. Base de datos</h2>
+<h3>12.1 Tablas</h3>
+<table>
+<thead><tr><th>Tabla</th><th>Propósito</th></tr></thead>
+<tbody>
+<tr><td><code>users</code></td><td>Usuarios; <code>role IN (&#x27;admin&#x27;,&#x27;user&#x27;)</code>, default <code>user</code></td></tr>
+<tr><td><code>personal_access_tokens</code></td><td>Tokens Sanctum</td></tr>
+<tr><td><code>sessions</code>, <code>password_reset_tokens</code></td><td>Soporte Laravel</td></tr>
+<tr><td><code>businesses</code></td><td>Empresas; <code>user_id</code>, <code>name</code>, <code>currency</code>, <code>fixed_cost_monthly</code></td></tr>
+<tr><td><code>products</code></td><td>Productos; <code>business_id</code>, <code>sku</code>, <code>unit</code>, <code>variable_cost_unit</code>, <code>current_stock</code>, <code>active</code></td></tr>
+<tr><td><code>price_observations</code></td><td>Observaciones de precio; <code>price</code>, <code>quantity_demanded</code>, <code>observed_at</code>, <code>source IN (&#x27;historico&#x27;,&#x27;estimado&#x27;)</code></td></tr>
+<tr><td><code>simulations</code></td><td>Snapshot de cada escenario: demanda, costos, óptimo, EPD, equilibrio y rango</td></tr>
+<tr><td><code>simulation_results</code></td><td>Grilla precio → cantidad/ingreso/costo/beneficio/EPD; <code>is_optimal</code></td></tr>
+<tr><td><code>audit_log</code></td><td>Auditoría de INSERT/UPDATE/DELETE en tablas del dominio</td></tr>
+<tr><td><code>product_cost_history</code></td><td>Historial de cambios de <code>variable_cost_unit</code></td></tr>
+</tbody></table>
+<p>Restricciones relevantes: <code>UNIQUE (user_id, product_id, name)</code> en <code>simulations</code> (de ahí el <strong>upsert</strong> por nombre); <code>UNIQUE (simulation_id, price)</code> en resultados; índice único parcial <code>idx_sim_results_one_optimal</code> que garantiza una sola fila óptima por simulación.</p>
+<h3>12.2 Vistas</h3>
+<ul>
+<li><code>v_resumen_simulaciones</code>: una fila por simulación con usuario, negocio, producto, demanda, costos, óptimo, EPD, tipo y equilibrio.</li>
+<li><code>v_curva_beneficios</code>: proyección de <code>simulation_results</code>.</li>
+</ul>
+<h3>12.3 Funciones económicas</h3>
+<table>
+<thead><tr><th>Función</th><th>Firma / utilidad</th></tr></thead>
+<tbody>
+<tr><td><code>fn_calcular_pendiente(p_p1, p_q1, p_p2, p_q2)</code></td><td><code>b = (Q1−Q2)/(P2−P1)</code>; valida precios distintos y <code>b &amp;gt; 0</code></td></tr>
+<tr><td><code>fn_calcular_intercepto(p_p, p_q, p_b)</code></td><td><code>a = Q + b·P</code></td></tr>
+<tr><td><code>fn_estimar_demanda(p_product_id)</code></td><td>Regresión por mínimos cuadrados; devuelve <code>(a, b)</code></td></tr>
+<tr><td><code>fn_calcular_demanda(p_a, p_b, p_price)</code></td><td><code>GREATEST(a − b·P, 0)</code></td></tr>
+<tr><td><code>fn_calcular_beneficio(p_a, p_b, p_price, p_cv, p_cf)</code></td><td><code>Q·(P−CV) − CF</code></td></tr>
+<tr><td><code>fn_calcular_epd(p_a, p_b, p_price)</code></td><td><code>b·P/Q</code> (6 decimales), o <code>0</code> si <code>Q ≤ 0</code></td></tr>
+<tr><td><code>fn_clasificar_demanda(p_epd)</code></td><td><code>elastic</code> / <code>inelastic</code> / <code>unitary</code></td></tr>
+<tr><td><code>fn_calcular_optimo(p_a, p_b, p_cv, p_cf)</code></td><td><code>P*</code>, <code>Q*</code>, <code>Π*</code>, EPD, tipo y umbrales de equilibrio</td></tr>
+</tbody></table>
+<h3>12.4 Procedimientos almacenados</h3>
+<table>
+<thead><tr><th>Procedimiento</th><th>Qué hace</th></tr></thead>
+<tbody>
+<tr><td><code>sp_generar_resultados</code></td><td>Borra la grilla anterior y genera precios desde <code>min</code> hasta <code>max</code> sumando <code>step</code>; marca como óptima la fila más cercana al óptimo analítico</td></tr>
+<tr><td><code>sp_run_simulation</code></td><td>Lee costos del producto/empresa (o aplica overrides), estima demanda, calcula óptimo, hace upsert en <code>simulations</code> y genera la grilla; devuelve el id por parámetro <code>OUT</code></td></tr>
+<tr><td><code>sp_refresh_simulation</code></td><td>Recalcula usando los <strong>valores guardados</strong> en <code>simulations</code> y regenera la grilla; no reestima demanda ni relee costos</td></tr>
+<tr><td><code>sp_seed_case_study</code></td><td>Siembra de forma idempotente usuarios, empresa, producto, observaciones y la simulación «Caso base»; borra y recrea «Caso base», por lo que su <code>id</code> cambia en cada re-seed</td></tr>
+</tbody></table>
+<p>Wrapper para Laravel (<code>06_api_helpers.sql</code>):</p>
+<pre><code class="language-sql">fn_run_simulation(p_user_id, p_product_id, p_name, p_price_min, p_price_max,
+                  p_price_step, p_cv_override, p_cf_override) RETURNS BIGINT</code></pre>
+<p>Existe porque los procedimientos con parámetros <code>OUT</code> no son cómodos desde PDO: el wrapper permite llamar con un simple <code>SELECT</code>.</p>
+<h3>12.5 Triggers (11)</h3>
+<table>
+<thead><tr><th>Trigger</th><th>Tabla</th><th>Evento</th><th>Efecto</th></tr></thead>
+<tbody>
+<tr><td><code>trg_users_updated_at</code></td><td><code>users</code></td><td>BEFORE UPDATE</td><td>Actualiza <code>updated_at</code></td></tr>
+<tr><td><code>trg_businesses_updated_at</code></td><td><code>businesses</code></td><td>BEFORE UPDATE</td><td>Actualiza <code>updated_at</code></td></tr>
+<tr><td><code>trg_products_updated_at</code></td><td><code>products</code></td><td>BEFORE UPDATE</td><td>Actualiza <code>updated_at</code></td></tr>
+<tr><td><code>trg_simulations_updated_at</code></td><td><code>simulations</code></td><td>BEFORE UPDATE</td><td>Actualiza <code>updated_at</code></td></tr>
+<tr><td><code>trg_audit_businesses</code></td><td><code>businesses</code></td><td>AFTER INSERT/UPDATE/DELETE</td><td>Escribe en <code>audit_log</code></td></tr>
+<tr><td><code>trg_audit_products</code></td><td><code>products</code></td><td>AFTER INSERT/UPDATE/DELETE</td><td>Escribe en <code>audit_log</code></td></tr>
+<tr><td><code>trg_audit_observations</code></td><td><code>price_observations</code></td><td>AFTER INSERT/UPDATE/DELETE</td><td>Escribe en <code>audit_log</code></td></tr>
+<tr><td><code>trg_audit_simulations</code></td><td><code>simulations</code></td><td>AFTER INSERT/UPDATE/DELETE</td><td>Escribe en <code>audit_log</code></td></tr>
+<tr><td><code>trg_validate_observations</code></td><td><code>price_observations</code></td><td>BEFORE INSERT/UPDATE</td><td>Valida precio y cantidad; normaliza <code>source</code>/<code>observed_at</code></td></tr>
+<tr><td><code>trg_cost_history_products</code></td><td><code>products</code></td><td>AFTER UPDATE OF <code>variable_cost_unit</code></td><td>Registra cambio en <code>product_cost_history</code></td></tr>
+<tr><td><code>trg_validate_simulacion</code></td><td><code>simulations</code></td><td>BEFORE INSERT/UPDATE</td><td>Valida rango, <code>b &amp;gt; 0</code> y coherencia EPD ↔ tipo de demanda</td></tr>
+</tbody></table>
+<p>No hay triggers de auditoría sobre <code>users</code>, <code>simulation_results</code>, <code>audit_log</code> ni <code>product_cost_history</code>.</p>
+<h2>13. API REST</h2>
+<p>Base: <code>http://localhost:8000/api</code>. Todas las respuestas son JSON. Las rutas autenticadas exigen <code>Authorization: Bearer &amp;lt;token&amp;gt;</code>.</p>
+<h3>13.1 Públicas</h3>
+<table>
+<thead><tr><th>Método</th><th>Ruta</th><th>Request</th><th>Respuesta</th></tr></thead>
+<tbody>
+<tr><td>POST</td><td><code>/register</code></td><td><code>name</code>, <code>email</code>, <code>password</code>, <code>password_confirmation</code></td><td>201: <code>message</code>, <code>user</code>, <code>token</code></td></tr>
+<tr><td>POST</td><td><code>/login</code></td><td><code>email</code>, <code>password</code></td><td>200: <code>message</code>, <code>user</code>, <code>token</code></td></tr>
+</tbody></table>
+<h3>13.2 Autenticadas</h3>
+<table>
+<thead><tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr></thead>
+<tbody>
+<tr><td>POST</td><td><code>/logout</code></td><td>Revoca el token actual</td></tr>
+<tr><td>GET</td><td><code>/me</code></td><td>Usuario autenticado</td></tr>
+<tr><td>GET</td><td><code>/dashboard</code></td><td><code>totals</code> (simulaciones, productos), <code>latest_simulation</code> con curva, <code>recent_simulations</code> (5)</td></tr>
+<tr><td>GET</td><td><code>/products</code></td><td>Productos del usuario (con <code>business</code>)</td></tr>
+<tr><td>GET</td><td><code>/products/{product}</code></td><td>Detalle con <code>business</code>, <code>observations</code> y <code>costHistory</code></td></tr>
+<tr><td>GET</td><td><code>/products/{product}/estimate</code></td><td><code>{ product_id, intercept_a, slope_b, equation, observations }</code></td></tr>
+<tr><td>GET</td><td><code>/products/{product}/observations</code></td><td>Observaciones ordenadas por precio</td></tr>
+<tr><td>POST</td><td><code>/products/{product}/observations</code></td><td>Alta de observación (201)</td></tr>
+<tr><td>DELETE</td><td><code>/products/{product}/observations/{observation}</code></td><td>Baja de observación</td></tr>
+<tr><td>GET</td><td><code>/simulations</code></td><td>Paginador de 15 simulaciones del usuario</td></tr>
+<tr><td>POST</td><td><code>/simulations</code></td><td>Ejecuta una simulación (201)</td></tr>
+<tr><td>GET</td><td><code>/simulations/{simulation}</code></td><td>Detalle con <code>product.business</code> y <code>results</code></td></tr>
+<tr><td>GET</td><td><code>/simulations/{simulation}/curve</code></td><td>Grilla ordenada por precio</td></tr>
+<tr><td>POST</td><td><code>/simulations/{simulation}/refresh</code></td><td>Recalcula y devuelve el recurso actualizado</td></tr>
+<tr><td>DELETE</td><td><code>/simulations/{simulation}</code></td><td>Elimina la simulación</td></tr>
+</tbody></table>
+<h3>13.3 Solo administrador</h3>
+<table>
+<thead><tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr></thead>
+<tbody>
+<tr><td>GET</td><td><code>/admin/audit-log</code></td><td>Últimas 100 entradas, <code>id desc</code></td></tr>
+<tr><td>GET</td><td><code>/admin/simulations</code></td><td>Últimas 100 simulaciones de todos los usuarios</td></tr>
+</tbody></table>
+<p>El control de rol se hace dentro de <code>AdminController::ensureAdmin()</code>; si no es admin, responde 403 con «Se requiere rol de administrador.».</p>
+<h3>13.4 Validaciones</h3>
+<p><code>RegisterRequest</code>:</p>
+<pre><code class="language-php">&#x27;name&#x27;     =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;max:120&#x27;],
+&#x27;email&#x27;    =&gt; [&#x27;required&#x27;, &#x27;email&#x27;, &#x27;max:190&#x27;, &#x27;unique:users,email&#x27;],
+&#x27;password&#x27; =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;min:8&#x27;, &#x27;confirmed&#x27;],</code></pre>
+<p><code>LoginRequest</code>: <code>email</code> required|email, <code>password</code> required|string.</p>
+<p><code>StoreObservationRequest</code>:</p>
+<pre><code class="language-php">&#x27;price&#x27;             =&gt; [&#x27;required&#x27;, &#x27;numeric&#x27;, &#x27;min:0.01&#x27;, &#x27;max:9999999999&#x27;],
+&#x27;quantity_demanded&#x27; =&gt; [&#x27;required&#x27;, &#x27;integer&#x27;, &#x27;min:0&#x27;],
+&#x27;observed_at&#x27;       =&gt; [&#x27;required&#x27;, &#x27;date&#x27;],
+&#x27;source&#x27;            =&gt; [&#x27;sometimes&#x27;, &#x27;in:historico,estimado&#x27;],</code></pre>
+<p><code>StoreSimulationRequest</code>:</p>
+<pre><code class="language-php">&#x27;product_id&#x27;  =&gt; [&#x27;required&#x27;, &#x27;integer&#x27;, &#x27;exists:products,id&#x27;],
+&#x27;name&#x27;        =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;max:150&#x27;],
+&#x27;price_min&#x27;   =&gt; [&#x27;required&#x27;, &#x27;numeric&#x27;, &#x27;min:0.01&#x27;],
+&#x27;price_max&#x27;   =&gt; [&#x27;required&#x27;, &#x27;numeric&#x27;, &#x27;gt:price_min&#x27;],
+&#x27;price_step&#x27;  =&gt; [&#x27;required&#x27;, &#x27;numeric&#x27;, &#x27;min:0.01&#x27;],
+&#x27;cv_override&#x27; =&gt; [&#x27;nullable&#x27;, &#x27;numeric&#x27;, &#x27;min:0&#x27;],
+&#x27;cf_override&#x27; =&gt; [&#x27;nullable&#x27;, &#x27;numeric&#x27;, &#x27;min:0&#x27;],</code></pre>
+<p>Mensajes propios: <code>email.unique</code> → «Este correo ya esta registrado.»; <code>password.confirmed</code> → «La confirmacion de la contrasena no coincide.»; <code>price_max.gt</code> → «El precio maximo debe ser mayor al precio minimo.»; <code>exists</code> → «El producto seleccionado no existe.».</p>
+<h3>13.5 Ejemplo: ejecutar una simulación</h3>
+<pre><code class="language-powershell">$login = Invoke-RestMethod http://localhost:8000/api/login -Method Post `
+  -ContentType application/json `
+  -Body &#x27;{&quot;email&quot;:&quot;admin@economia.test&quot;,&quot;password&quot;:&quot;password123&quot;}&#x27;
+
+$headers = @{ Authorization = &quot;Bearer $($login.token)&quot; }
+
+$body = @{
+  product_id = 1
+  name       = &#x27;Escenario navideño&#x27;
+  price_min  = 4
+  price_max  = 25
+  price_step = 0.5
+} | ConvertTo-Json
+
+Invoke-RestMethod http://localhost:8000/api/simulations -Method Post `
+  -Headers $headers -ContentType application/json -Body $body</code></pre>
+<p>Respuesta esperada en el caso base: <code>optimal_price=12</code>, <code>optimal_quantity=400</code>, <code>max_profit=1700</code>, <code>epd=1.5</code>, <code>demand_type=elastic</code>.</p>
+<h3>13.6 Verificación de propiedad</h3>
+<p>Los controladores verifican pertenencia antes de devolver o modificar recursos:</p>
+<pre><code class="language-php">abort_unless($product-&gt;business-&gt;user_id === $request-&gt;user()-&gt;id,
+             403, &#x27;No tienes acceso a este producto.&#x27;);
+abort_unless($simulation-&gt;user_id === $request-&gt;user()-&gt;id,
+             403, &#x27;No tienes acceso a esta simulacion.&#x27;);</code></pre>
+<h2>14. Cómo se ejecuta una simulación</h2>
+<p>Secuencia completa, de la UI a la BD:</p>
+<ul>
+<li>El frontend envía <code>POST /api/simulations</code> con <code>product_id</code>, <code>name</code>, <code>price_min</code>, <code>price_max</code>, <code>price_step</code> y overrides opcionales.</li>
+<li><code>StoreSimulationRequest</code> valida los campos.</li>
+<li><code>SimulationController@store</code> verifica que el producto pertenezca al usuario.</li>
+<li>Se llama al wrapper SQL (8 parámetros, en este orden):</li>
+</ul>
+<pre><code class="language-php">   DB::selectOne(
+       &#x27;SELECT fn_run_simulation(?, ?, ?, ?, ?, ?, ?, ?) AS id&#x27;,
+       [$userId, $productId, $name, $priceMin, $priceMax, $priceStep, $cvOverride, $cfOverride]
+   )-&gt;id;</code></pre>
+<ul>
+<li><code>fn_run_simulation</code> invoca <code>sp_run_simulation</code>, que:</li>
+<ul>
+<li>lee <code>products.variable_cost_unit</code> y <code>businesses.fixed_cost_monthly</code> (o aplica overrides);</li>
+<li>llama a <code>fn_estimar_demanda(product_id)</code> → <code>(a, b)</code>;</li>
+<li>llama a <code>fn_calcular_optimo(a, b, CV, CF)</code> → <code>P*</code>, <code>Q*</code>, <code>Π*</code>, EPD, tipo, equilibrio;</li>
+<li>hace <code>INSERT ... ON CONFLICT (user_id, product_id, name) DO UPDATE</code> en <code>simulations</code>;</li>
+<li>llama a <code>sp_generar_resultados</code>, que borra la grilla anterior y genera las filas, marcando una como <code>is_optimal</code>;</li>
+<li>devuelve el id por <code>OUT p_simulation_id</code>.</li>
+</ol>
+<li>El controlador recarga <code>Simulation::with([&#x27;product.business&#x27;, &#x27;results&#x27;])</code> y responde 201.</li>
+<li>El frontend navega a <code>/simulations/{id}</code>.</li>
+</ul>
+<p><strong>Refresh</strong>, en cambio:</p>
+<pre><code class="language-php">DB::statement(&#x27;CALL sp_refresh_simulation(?)&#x27;, [$simulation-&gt;id]);
+return response()-&gt;json($simulation-&gt;fresh()-&gt;load([&#x27;product.business&#x27;, &#x27;results&#x27;]));</code></pre>
+<p><code>sp_refresh_simulation</code> recalcula con <code>intercept_a</code>, <code>slope_b</code>, <code>variable_cost</code> y <code>fixed_cost</code> <strong>ya guardados</strong> en <code>simulations</code>; no vuelve a estimar la demanda ni a leer los costos vigentes del producto.</p>
+<p>Las relaciones Eloquent <code>results()</code> ordenan por <code>price</code>, por lo que dashboard y detalle reciben la curva ordenada sin <code>orderBy</code> adicional en el controlador.</p>
+<h2>15. Autenticación, roles y CORS</h2>
+<ul>
+<li>Laravel Sanctum con tokens personales (<code>createToken(&#x27;api-token&#x27;)</code>); <code>expiration =&amp;gt; null</code>.</li>
+<li>El frontend guarda <code>eco300_token</code> y <code>eco300_user</code> en <code>localStorage</code> y envía <code>Authorization: Bearer …</code> en cada petición.</li>
+<li>Al arrancar, si hay token, llama a <code>GET /me</code>; si falla, limpia token y usuario.</li>
+<li>El interceptor de Axios ante <code>401</code> borra el storage y redirige a <code>/login</code> (salvo que ya esté en <code>/login</code>). El <code>403</code> solo muestra el mensaje.</li>
+<li>Roles: <code>admin</code> y <code>user</code>. <code>User::isAdmin()</code> compara estrictamente con <code>admin</code>. El registro público siempre crea <code>user</code> (default del modelo y de la BD).</li>
+<li>CORS: <code>paths =&amp;gt; [&#x27;api/*&#x27;, &#x27;sanctum/csrf-cookie&#x27;]</code>, orígenes desde <code>CORS_ALLOWED_ORIGINS</code> (default <code>http://localhost:5173</code>), todos los métodos y headers, <code>supports_credentials =&amp;gt; false</code>.</li>
+<li>Las respuestas 401 de la API son JSON <code>{&quot;message&quot;:&quot;No autenticado.&quot;}</code>, sin redirección web.</li>
+<li><code>extractMessage</code> del frontend prioriza <code>data.message</code>, luego <code>data.errors</code>, luego <code>error.message</code> y por último «Error inesperado».</li>
+</ul>
+<h2>16. Verificación y pruebas</h2>
+<pre><code class="language-powershell"># BD: ejecuta 00_run_all.sql + 99_verify.sql con aserciones
+powershell -ExecutionPolicy Bypass -File scripts\init_db.ps1
+
+# API: extremo a extremo (requiere la API levantada)
+powershell -ExecutionPolicy Bypass -File scripts\test_api.ps1</code></pre>
+<p><code>scripts/test_api.ps1</code> comprueba, en orden:</p>
+<ul>
+<li><code>POST /login</code> (rol <code>admin</code>) y <code>GET /me</code>.</li>
+<li><code>GET /dashboard</code> (<code>epd = 1.5000</code>), <code>GET /products</code>, <code>GET /products/{id}/estimate</code> (<code>Q = 1000.0000 - 50.0000P</code>).</li>
+<li>Alta y baja de una observación (<code>price=12</code>, <code>quantity=400</code>, <code>observed_at=2026-11-20</code>, <code>source=estimado</code>).</li>
+<li>Creación de simulación (<code>4</code>–<code>25</code>, paso <code>0.5</code>): <code>P*=12.00</code>, <code>Q*=400.0000</code>, <code>Π*=1700.00</code>, <code>elastic</code>; curva de 43 filas; refresh; baja.</li>
+<li>Registro público (rol <code>user</code>), 403 en <code>/admin/audit-log</code> y 401 con token inválido.</li>
+</ul>
+<p>Al final imprime «TODAS LAS PRUEBAS DE LA API PASARON». La observación y la simulación de prueba se borran; el usuario registrado permanece.</p>
+<p>Pruebas opcionales de SQL (no incluidas en <code>00_run_all.sql</code>):</p>
+<pre><code class="language-powershell">docker compose exec -T postgres psql -U economia -d economia -f /sql/98_tests.sql
+docker compose exec -T postgres psql -U economia -d economia -f /sql/99_verify.sql</code></pre>
+<h2>17. Configuración</h2>
+<h3>17.1 Raíz <code>.env.example</code></h3>
+<pre><code class="language-dotenv">POSTGRES_DB=economia
+POSTGRES_USER=economia
+POSTGRES_PASSWORD=economia
+PGADMIN_EMAIL=admin@economia.com
+PGADMIN_PASSWORD=admin
+APP_NAME=&quot;Simulador ECO300&quot;
+APP_ENV=local
+APP_DEBUG=true
+CORS_ALLOWED_ORIGINS=http://localhost:5173</code></pre>
+<p>El compose aplica defaults para esas variables. <code>VITE_API_URL</code> no está en el <code>.env</code> raíz: el compose usa <code>http://localhost:8000/api</code> por defecto.</p>
+<h3>17.2 Backend y frontend</h3>
+<ul>
+<li><code>backend/.env</code>: <code>DB_CONNECTION=pgsql</code>, <code>DB_HOST=127.0.0.1</code>, <code>DB_PORT=5433</code> en local; dentro de Docker el compose inyecta <code>DB_HOST=postgres</code>, <code>DB_PORT=5432</code>. <code>APP_KEY</code> ya generada en el entorno actual.</li>
+<li><code>frontend/.env.example</code>: <code>VITE_API_URL=http://localhost:8000/api</code>.</li>
+<li>Cambiar la URL de la API en Docker requiere reconstruir la imagen del frontend:</li>
+</ul>
+<pre><code class="language-powershell">  docker compose up -d --build frontend</code></pre>
+<h2>18. Comandos útiles</h2>
+<pre><code class="language-powershell"># Estado de contenedores
+docker compose ps
+
+# Resumen de simulaciones
+docker compose exec -T postgres psql -U economia -d economia -c &quot;SELECT * FROM v_resumen_simulaciones;&quot;
+
+# Re-sembrar el caso base (cambia el id de &quot;Caso base&quot;)
+docker compose exec -T postgres psql -U economia -d economia -c &quot;CALL sp_seed_case_study();&quot;
+
+# Refrescar una simulación por id
+docker compose exec -T postgres psql -U economia -d economia -c &quot;CALL sp_refresh_simulation(1);&quot;
+
+# Curva de beneficios de la última simulación base
+docker compose exec -T postgres psql -U economia -d economia -c &quot;SELECT * FROM v_curva_beneficios WHERE simulation_id = (SELECT id FROM simulations WHERE name = &#x27;Caso base&#x27; ORDER BY id DESC LIMIT 1);&quot;
+
+# Listar rutas de la API
+cd backend; php artisan route:list --path=api
+
+# Desarrollo local del frontend (sin Docker)
+cd frontend; npm install; npm run dev
+
+# Build de producción del frontend
+cd frontend; npm run build
+
+# Regenerar este manual (HTML, PDF y DOCX)
+python scripts/build_manual.py</code></pre>
+<h2>19. Solución de problemas</h2>
+<table>
+<thead><tr><th>Síntoma</th><th>Causa / acción</th></tr></thead>
+<tbody>
+<tr><td>El backend no conecta con la BD dentro de Docker</td><td>Verificar que se usa <code>postgres:5432</code> (no <code>127.0.0.1:5433</code>); el comando debe incluir <code>--no-reload</code></td></tr>
+<tr><td>«PostgreSQL no alcanzo el estado healthy»</td><td>Revisar <code>docker compose logs postgres</code> y volver a ejecutar <code>init_db.ps1</code></td></tr>
+<tr><td><code>Se requieren al menos 2 observaciones…</code></td><td>Cargar dos observaciones con precios distintos en <strong>Productos</strong></td></tr>
+<tr><td><code>Los datos no describen una demanda decreciente</code></td><td>Revisar las observaciones: al subir el precio debe bajar la cantidad</td></tr>
+<tr><td>«Sin productos» en la UI</td><td>Usar el usuario demo o ejecutar <code>CALL sp_seed_case_study();</code></td></tr>
+<tr><td><code>401</code> y redirección al login</td><td>Token vencido o inválido; volver a ingresar</td></tr>
+<tr><td><code>403</code> en administración</td><td>El rol del usuario es <code>user</code>, no <code>admin</code></td></tr>
+<tr><td>Cambió <code>VITE_API_URL</code> pero la app sigue llamando a la URL vieja</td><td>Reconstruir la imagen: <code>docker compose up -d --build frontend</code></td></tr>
+<tr><td>Error al ejecutar <code>php artisan migrate</code></td><td>No hacerlo: el esquema lo gestionan los scripts SQL</td></tr>
+<tr><td>Conflicto en el puerto 5432</td><td>PostgreSQL se publica en el host como 5433; ajustar <code>DB_PORT</code> solo para ejecución local</td></tr>
+</tbody></table>
+<h2>20. Discrepancias conocidas entre README y código</h2>
+<p>Esta sección documenta diferencias detectadas entre los README del repositorio y la implementación real, para evitar confusiones:</p>
+<ul>
+<li><code>README.md</code> afirma «21 triggers»; <code>04_triggers.sql</code> define <strong>11</strong>.</li>
+<li><code>backend/README.md</code> cita <code>database/sql/06_api_helpers.sql</code> como si estuviera dentro de <code>backend/</code>; la ruta real es <code>database/sql/06_api_helpers.sql</code> en la raíz.</li>
+<li><code>frontend/README.md</code> habla de «ABM de productos»; la interfaz <strong>no</strong> crea ni edita productos, solo observaciones.</li>
+<li><code>frontend/README.md</code> dice «grilla de 43 precios» como si fuera fija; la grilla es dinámica y depende de <code>price_min</code>, <code>price_max</code> y <code>price_step</code>.</li>
+<li><code>RegisterPage</code> indica «rol estudiante»; el rol asignado es <code>user</code>.</li>
+<li>El comentario de <code>sp_refresh_simulation</code> sugiere que es útil cuando cambian los costos del producto, pero el procedimiento usa los costos guardados en la simulación, no los actuales.</li>
+<li><code>sp_seed_case_study</code> borra y recrea «Caso base», por lo que su <code>id</code> no es estable entre re-seeds.</li>
+</ul>
+<hr>
+<p><em>Generado para el Proyecto ECO300 · Grupo 99. Última revisión: noviembre de 2026.</em></p></body></html>

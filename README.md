@@ -10,6 +10,10 @@ Proyecto ECO300 · Grupo 99 · Estado actual: **stack completo implementado y ve
 | Docker full stack (4 contenedores) | ✅ |
 | Repositorio GitHub | ✅ — https://github.com/awdaz/simulador-microeconomico-eco300 |
 
+## Manual
+
+Manual de usuario y documentación técnica: [`docs/manual.md`](docs/manual.md), también disponible en `docs/manual.pdf` y `docs/manual.docx`. Para regenerar las versiones derivadas: `python scripts/build_manual.py`.
+
 ## Stack
 
 | Capa | Tecnología |
